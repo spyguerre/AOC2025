@@ -6,14 +6,12 @@ import re
 
 def main():
     day = 0
+    input = open(f"day{day:02d}/input.txt", "r").readlines()
 
-    # input = open(f"day{day:02d}/input.txt", "r").readlines()
-    input = open(f"input.txt", "r").readlines()
+    inlist = [line.strip() for line in input]
 
     inmap = [[c for c in line.strip()] for line in input]
     inmap = Map2d(inmap)
-
-    inlist = [line.strip() for line in input]
 
 
 class Map2d():
