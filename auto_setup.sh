@@ -1,10 +1,18 @@
 #!/bin/bash
 
-year=2025
+# Try to extract day in argument
 day=$1
+# Default to current day if user didn't input any
+if [ -z "$1" ]; then
+    day=$(date | grep -oE '[0-9]{1,2}' | head -n 1)
+fi
 
+
+# Define other constants and variables
+year=2025
 token=$(cat AoC_token.txt)
 dir="day$(printf "%02d\n" "${day}")"
+
 
 # Create dir
 mkdir -p "${dir}"
@@ -22,6 +30,7 @@ curl -sb "session=${token}" "https://adventofcode.com/${year}/day/${day}" | sed 
 
 # Edit day number in python script
 sed -i "s|\"InsertDayNumberHere\"|${day}|" "${dir}/silver.py"
+
 
 # Activate python venv
 source .venv/bin/activate
