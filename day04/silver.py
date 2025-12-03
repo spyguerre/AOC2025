@@ -5,7 +5,7 @@ import re
 
 
 def main():
-    day = "InsertDayNumberHere"
+    day = 4
     intest = open(f"day{day:02d}/test_input.txt", "r").readlines()
     inreal = open(f"day{day:02d}/input.txt", "r").readlines()
 
