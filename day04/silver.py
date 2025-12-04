@@ -1,21 +1,36 @@
-import math
-import numpy as np
 import sys
-import re
 
 
 def main():
-    day = "InsertDayNumberHere"
+    day = 4
     intest = open(f"day{day:02d}/test_input.txt", "r").readlines()
     inreal = open(f"day{day:02d}/input.txt", "r").readlines()
 
     # Input mode
-    input = intest
+    input = inreal
 
-    inlist = [line.strip() for line in input]
-
+    # Load map input
     inmap = [[c for c in line.strip()] for line in input]
     inmap = Map2d(inmap)
+
+    res = 0
+    # Iterate over the nodes of the map
+    for i, row in enumerate(inmap.inmap):
+        for j, c in enumerate(row):
+            # Only treat nodes that are paper rolls
+            if c[0] == "@":
+                count = 0  # Count the adjacent nodes that are paper rolls
+                for dir in Map2d.d8:
+                    new_coos = Map2d.add_coos([i, j], dir)
+                    # Ensure nearby coordinates are in the map then check that they correspond to another paper roll
+                    if inmap.coos_in_map(new_coos) and inmap.get(new_coos, 0) == "@":
+                        count += 1
+                
+                # Increment the result the paper roll is removable
+                if count < 4:
+                    res += 1
+    
+    print(res)
 
 
 # Utility class representing a 2D matrix
