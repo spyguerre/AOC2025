@@ -2,6 +2,8 @@
 
 Hi! So here is my python code for the [2025 AoC](https://adventofcode.com/2025/) puzzles :)
 
+I **do not use any AI** (and barely any internet at all) to solve the puzzles obviously. I tend to use AI more and more to write code for other projects though; I also enjoy AoC because it's like going back before the LLMs era, plus the competitive aspect :D
+
 For each day, you can find my solutions in the dayXX/ folder. I decided this year to have my solutions in two files for simplicity: `silver.py` for part 1 and `gold.py` for part 2.
 
 I **comment** my code to try and make it as understandable as I can. You can also find some more information in `comments.md` each day; they contain stuff like my **times**, the **difficulties** I experienced, and an explanation of my **strategy** whenever I feel like it is needed!
