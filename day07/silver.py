@@ -1,0 +1,147 @@
+import sys
+
+
+def main():
+    day = 7
+    intest = open(f"day{day:02d}/test_input.txt", "r").readlines()
+    inreal = open(f"day{day:02d}/input.txt", "r").readlines()
+
+    # Input mode
+    input = inreal
+
+    # Create map object
+    inmap = [[c for c in line.strip()] for line in input]
+    inmap = Map2d(inmap)
+
+    sj = None  # Assume start is always in the first row and look for start column
+    for j, node in enumerate(inmap.inmap[0]):
+        if node[0] == "S":
+            sj = j
+            break
+    s = (0, sj)  # Start coordinates
+
+    queue = [s]  # Init a queue with starting position
+    res = 0
+    while queue:  # Iterate until queue is empty
+        cur_coos = queue.pop(0)  # The coordinates of the current node
+
+        next_coos = Map2d.add_coos(cur_coos, (1, 0))  # The node below the current node
+        if not inmap.coos_in_map(next_coos):  # Skip cases where we reached the bottom end of the map
+            continue
+        
+        seen_cur = inmap.get(cur_coos, 0) == "|"  # Whether the current node has already been marked
+
+        # If the node below is a splitter and this is the first time going through this path (avoids counting the same path twice for splitting)
+        if inmap.get(next_coos, 0) == "^" and not seen_cur:
+            res += 1  # Increment the split count
+            queue.extend([  # Add the coordinates on the left and right of the splitter node to the queue
+                Map2d.add_coos(next_coos, [0, -1]),
+                Map2d.add_coos(next_coos, [0, 1])
+            ])
+        # Else propagate the beam, only on empty space
+        elif inmap.get(next_coos, 0) == ".":
+            queue.append(next_coos)
+
+        # Replace index 0 of the current node
+        inmap.set(cur_coos, "|", 0)
+
+    print(res)
+
+
+# Utility class representing a 2D matrix
+class Map2d():
+    d4 = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+    d8 = [(0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1), (-1, 0), (-1, 1)]
+
+    def __init__(self, inmap):
+        self.inmap = [[[value, sys.maxsize] for value in row] for row in inmap]
+
+    # Returns the height of the input map
+    def height(self):
+        return len(self.inmap)
+    
+    # Returns the width of the input map
+    def width(self):
+        return len(self.inmap[0])
+
+    # Returns whether the given coordinates are inside the map
+    def coos_in_map(self, coos):
+        return 0 <= coos[0] < self.height() and 0 <= coos[1] < self.width()
+
+    # Getter for node (or index k of node if k!=None) at coordinates coos
+    def get(self, coos, k=None):
+        if k is not None:
+            return self.inmap[coos[0]][coos[1]][k]
+        else:
+            return self.inmap[coos[0]][coos[1]]
+
+    # Sets index i (or node if k=None) of cell at coordinates coos to input value (or node if k=None)
+    def set(self, coos, value, k=None):
+        if k is not None:
+            self.inmap[coos[0]][coos[1]][k] = value
+        else:
+            self.inmap[coos[0]][coos[1]] = value
+
+    # Resets indices > 1 of each node
+    def reset(self):
+        for row in self.inmap:
+            for node in row:
+                for k in range(len(node)):
+                    if k == 0:
+                        continue
+                    elif k == 1:
+                        node[k] = sys.maxsize
+                    else:
+                        node[k] = 0  # Reset other indices at 0 by default
+
+    # Performs dijkstra's algorithm with allowed directions dirs and a given starting point start
+    # Saves distance in each node at index 1
+    def dijkstra(self, dirs, start):
+        start_dist = 0  # Start distance definition
+        self.set(start, start_dist, 1)
+        file = [start]
+
+        while file:
+            pos = file.pop(0)
+            cur_dist = self.get(pos, 1)
+
+            for dir in dirs:
+                new_coos = self.add_coos(pos, dir)
+
+                if not self.coos_in_map(new_coos):  # Ensure new coos are inside the map
+                    continue
+                
+                trans_cond = self.get(new_coos, 0) != "#"  # Transition condition definition
+                if self.get(new_coos, 1) == sys.maxsize and trans_cond:  # Ensure it is a new node
+                    file.append(new_coos)  # Add node to discover
+
+                    # Compute new distance
+                    new_dist = cur_dist + 1  # Distance rule definition
+                    self.set(new_coos, new_dist, 1)
+    
+    # Displays the map according to index k, with a min padding pad, and with col_str between columns
+    def print(self, k=0, pad=0, col_str=""):
+        for row in self.inmap:
+            prt_str = ""
+
+            for j, node in enumerate(row):
+                if j != 0:
+                    prt_str += col_str
+                
+                prt_str += f"{str("inf" if type(node[k]) is int and node[k] == sys.maxsize else node[k]):>{pad}}"
+
+            print(prt_str)
+
+    # Adds two sets of coordinates and returns them
+    @staticmethod
+    def add_coos(coos1, coos2):
+        return [coos1[i] + coos2[i] for i in range(min(len(coos1), len(coos2)))]
+
+    # Returns a deep copy of a 2D list
+    @staticmethod
+    def deep_copy(inmap):
+        return [[cell for cell in row] for row in inmap]
+
+
+if __name__ == "__main__":
+    main()
