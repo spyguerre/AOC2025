@@ -52,6 +52,29 @@ class Map2d():
         else:
             self.inmap[coos[0]][coos[1]] = value
 
+# Returns a flattened list of all the nodes in the map
+    def iter(self):
+        res = []
+        for row in self.inmap:
+            res.extend(row)
+        return res
+
+    # Returns the first occurence (in reading order) of a node containing a given value at index k
+    def find_first(self, value, k=0):
+        for i, row in enumerate(self.inmap):
+            for j, node in enumerate(row):
+                if node[k] == value:
+                    return [i, j]
+
+    # Returns the list of all occurences (in reading order) of nodes containing a given value at index k
+    def find_all(self, value, k=0):
+        res = []
+        for i, row in enumerate(self.inmap):
+            for j, node in enumerate(row):
+                if node[k] == value:
+                    res.append([i, j])
+        return res
+
     # Resets indices > 1 of each node
     def reset(self):
         for row in self.inmap:

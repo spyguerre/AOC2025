@@ -13,12 +13,8 @@ def main():
     inmap = [[c for c in line.strip()] for line in input]
     inmap = Map2d(inmap)
 
-    sj = None  # Assume start is always in the first row and look for start column
-    for j, node in enumerate(inmap.inmap[0]):
-        if node[0] == "S":
-            sj = j
-            break
-    s = (0, sj)  # Start coordinates
+    # Assume start is always in the first row and look for start column
+    s = inmap.find_first("S")  # Start coordinates
 
     queue = [s]  # Init a queue with starting position
     res = 0
@@ -56,6 +52,29 @@ class Map2d():
     def __init__(self, inmap):
         self.inmap = [[[value, sys.maxsize] for value in row] for row in inmap]
 
+    # Returns a flattened list of all the nodes in the map
+    def iter(self):
+        res = []
+        for row in self.inmap:
+            res.extend(row)
+        return res
+
+    # Returns the first occurence (in reading order) of a node containing a given value at index k
+    def find_first(self, value, k=0):
+        for i, row in enumerate(self.inmap):
+            for j, node in enumerate(row):
+                if node[k] == value:
+                    return [i, j]
+
+    # Returns the list of all occurences (in reading order) of nodes containing a given value at index k
+    def find_all(self, value, k=0):
+        res = []
+        for i, row in enumerate(self.inmap):
+            for j, node in enumerate(row):
+                if node[k] == value:
+                    res.append([i, j])
+        return res
+                
     # Returns the height of the input map
     def height(self):
         return len(self.inmap)
