@@ -33,7 +33,7 @@ def main():
     # Dict to map a circuit id to the list of its boxes
     circuits = {}  # key = id | value = list of coordinates
     # A second dict to map a box's coordinates to its circuit id, which serves as an inverted index
-    boxmap = {}  # key = coordinates | value = curcuit id
+    boxmap = {}  # key = coordinates | value = circuit id
 
     # Update the two dicts by running the n_con first connections
     max_cid = 0  # Counter for the greatest assigned circuit id

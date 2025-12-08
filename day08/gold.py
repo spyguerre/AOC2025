@@ -29,11 +29,11 @@ def main():
     # Dict to map a circuit id to the list of its boxes
     circuits = {}  # key = id | value = list of coordinates
     # A second dict to map a box's coordinates to its circuit id, which serves as an inverted index
-    boxmap = {}  # key = coordinates | value = curcuit id
+    boxmap = {}  # key = coordinates | value = circuit id
 
     # Update the two dicts by running the n_con first connections
     max_cid = 0  # Counter for the greatest assigned circuit id
-    bc1, bc2 = None, None  # Variables that wil hold the coordinates of the last two boxes when we break the loop
+    bc1, bc2 = None, None  # Variables that will hold the coordinates of the last two boxes when we break the loop
     for c1, c2, _ in connections:  # Iterate over the connections
         # Check whether both sets of coordinates whether they are already associated with a circuit id
         seen_c1 = c1 in boxmap.keys()
