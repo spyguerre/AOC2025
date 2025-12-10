@@ -1,18 +1,18 @@
-import math
-import numpy as np
 import sys
-import re
 
 
-def sparse_coos(k_coos, k):
-    for sparse_index, index in enumerate(k_coos):
+# Iterates the list k_coos (made up of sorted integers and ranges), and returns the compressed index of the list to which an index k belongs
+def compressed_coos(k_coos, k):
+    for comp_index, index in enumerate(k_coos):
+        # Case of a range of two integers; check if k is strictly between the two integers
         if type(index) is tuple:
             k1, k2 = index
             if k1 < k < k2:
-                return sparse_index
+                return comp_index
+        # Case for a simple integer column; check if the integer is k
         else:
             if k == index:
-                return sparse_index
+                return comp_index
 
 
 def main():
@@ -23,98 +23,122 @@ def main():
     # Input mode
     input = inreal
 
-    inlist = [line.strip().split(",") for line in input]
-    inlist = [(int(i), int(j)) for (i, j) in inlist]
+    # Extract the list of coordinates of the red tiles
+    red_tiles = [line.strip().split(",") for line in input]
+    red_tiles = [(int(i), int(j)) for (i, j) in red_tiles]
 
-    # Make a list of all i coordinates
-    temp_i_coos = list(set([c[0] for c in inlist]))
-    temp_j_coos = list(set([c[1] for c in inlist]))
-    temp_i_coos.sort()
-    temp_j_coos.sort()
+    # Make a temporary list of all i and j coordinates, sorted and without duplicate
+    temp_i_coos = sorted(list(set([c[0] for c in red_tiles])))
+    temp_j_coos = sorted(list(set([c[1] for c in red_tiles])))
 
+    # Init the actual list of the compressed matrix's i and j indices
+    # Init with an element for padding, used to explore the graph on the sides later
     i_coos = [-1]
     j_coos = [-1]
 
+    # Append an element per row of the compressed matrix, that reflect the coordinates of the actual map.
+    # We append in turn the index of a red tile's y coordinate, and the range between the current red tile and the next one
     i2 = None
     for n in range(len(temp_i_coos) - 1):
         i1, i2 = temp_i_coos[n], temp_i_coos[n+1]
         i_coos.append(i1)
         i_coos.append((i1, i2))
-    i_coos.append(i2)
+    i_coos.append(i2)  # Don't forget the last row
+    # Same for j indices
     j2 = None
     for n in range(len(temp_j_coos) - 1):
         j1, j2 = temp_j_coos[n], temp_j_coos[n+1]
         j_coos.append(j1)
         j_coos.append((j1, j2))
-    j_coos.append(j2)
+    j_coos.append(j2)  # Don't forget the last column
 
+    # Append a last element for padding like earlier
     i_coos.append(sys.maxsize)
     j_coos.append(sys.maxsize)
 
-    inmap = [["." for _ in range(len(j_coos))] for _ in range(len(i_coos))]
-    inmap = Map2d(inmap)
+    # Init the compressed matrix with the right size
+    comp_matrix = [["." for _ in range(len(j_coos))] for _ in range(len(i_coos))]
+    comp_matrix = Map2d(comp_matrix)
 
-    for i, j in inlist:
-        inmap.set((sparse_coos(i_coos, i), sparse_coos(j_coos, j)), "#", 0)
+    # Set all red tiles in the compressed matrix
+    for i, j in red_tiles:
+        comp_matrix.set((compressed_coos(i_coos, i), compressed_coos(j_coos, j)), "#", 0)
 
-    inlistlooped = inlist.copy() + [inlist[0]]
+    # Create a copy if the list and add duplicate the first element to the end, to handle looping around the points more easily
+    red_tiles_looped = red_tiles.copy() + [red_tiles[0]]
 
-    for k, (i1, j1) in enumerate(inlistlooped):
-        if k == len(inlistlooped)-1:
+    # Add vertical or horizontal chars to the map (instead of just the "X"s), where the green tiles between each pair of points are
+    for k in range(len(red_tiles_looped)):
+        if k == len(red_tiles_looped)-1:  # Last point is also the first one in this list, which we already treated
             break
+        
+        # Extract the coordinates from the list of red tiles
+        i1, j1 = red_tiles_looped[k]
+        i2, j2 = red_tiles_looped[k+1]
 
-        i2, j2 = inlistlooped[k+1]
-
+        # If the two points are connected by an horizontal line
         if i1 == i2:
-            i_sparse = sparse_coos(i_coos, i1)
-            j_min_sparse = sparse_coos(j_coos, min(j1, j2))
-            j_max_sparse = sparse_coos(j_coos, max(j1, j2))
-            for j_sparse in range(j_min_sparse+1, j_max_sparse):
-                inmap.set((i_sparse, j_sparse), "|", 0)
+            # Compute the line's indices in the compressed matrix
+            i_comp = compressed_coos(i_coos, i1)
+            j_min_comp = compressed_coos(j_coos, min(j1, j2))
+            j_max_comp = compressed_coos(j_coos, max(j1, j2))
+
+            # Only iterate strictly between the limits to avoid replacing the "#"s on either side
+            for j_comp in range(j_min_comp+1, j_max_comp):
+                comp_matrix.set((i_comp, j_comp), "|", 0)  # (We use "|" for horizontal lines since we print the transposed matrix for debugging today)
+
+        # Else, the two points are connected by an vertical line
         else:
-            j_sparse = sparse_coos(j_coos, j1)
-            i_min_sparse = sparse_coos(i_coos, min(i1, i2))
-            i_max_sparse = sparse_coos(i_coos, max(i1, i2))
-            for i_sparse in range(i_min_sparse+1, i_max_sparse):
-                inmap.set((i_sparse, j_sparse), "-", 0)
+            # Compute the line's indices in the compressed matrix
+            j_comp = compressed_coos(j_coos, j1)
+            i_min_comp = compressed_coos(i_coos, min(i1, i2))
+            i_max_comp = compressed_coos(i_coos, max(i1, i2))
+            
+            # Only iterate strictly between the limits to avoid replacing the "#"s on either side
+            for i_comp in range(i_min_comp+1, i_max_comp):
+                comp_matrix.set((i_comp, j_comp), "-", 0)  # (We use "-" for vertical lines since we print the transposed matrix for debugging today)
 
-    inmap.dijkstra(Map2d.d4, (0, 0))
+    # Run the graph exploration in the compressed matrix, starting at (0, 0) which we know is a tile on the outside (padding)
+    comp_matrix.dijkstra(Map2d.d4, (0, 0))
 
-    bestcoos = None
-    bestarea = 0
-    for a, (i1, j1) in enumerate(inlist):
-        for b, (i2, j2) in enumerate(inlist):
-            if a < b:
-                continue
-
-            area = (abs(int(i2)-int(i1)) + 1)*(abs(int(j2)-int(j1)) + 1)
-            if not area > bestarea:
-                continue
-
-            i1_sparse, j1_sparse = sparse_coos(i_coos, i1), sparse_coos(j_coos, j1)
-            i2_sparse, j2_sparse = sparse_coos(i_coos, i2), sparse_coos(j_coos, j2)
-
-            possible = True
-            for i_sparse in range(min(i1_sparse, i2_sparse), max(i1_sparse, i2_sparse)+1):
-                for j_sparse in range(min(j1_sparse, j2_sparse), max(j1_sparse, j2_sparse)+1):
-                    if inmap.get((i_sparse, j_sparse), 1) < sys.maxsize:
-                        possible = False
-                        break
-                if not possible:
-                    break
-
-            if not possible:
+    bestarea = 0  # The area of the best rectangle found
+    bestcoos = None  # Best rectangle's two pairs of coordinates, unused but useful for debugging :)
+    # Strict triangle iteration over the "pair of red tiles matrix"
+    for a, (i1, j1) in enumerate(red_tiles):
+        for b, (i2, j2) in enumerate(red_tiles):
+            if a < b:  # Don't treat the same pair twice
                 continue
             
-            if area > bestarea:
-                bestarea = area
-                bestcoos = [
-                    (i1, j1),
-                    (i2, j2)
-                ]
+            # Compute area
+            area = (abs(i2-i1) + 1)*(abs(j2-j1) + 1)
+            if not area > bestarea:  # If it isn't greater than the current best one, no need to investigate further
+                continue
+            
+            # Compute the indices of the rectangle's red tile corners in the compressed matrix
+            i1_comp, j1_comp = compressed_coos(i_coos, i1), compressed_coos(j_coos, j1)
+            i2_comp, j2_comp = compressed_coos(i_coos, i2), compressed_coos(j_coos, j2)
+
+            # Check that every tile in the compressed matrix (and thus, in the normal map) have not been explored by Dijkstra
+            possible = True
+            for i_comp in range(min(i1_comp, i2_comp), max(i1_comp, i2_comp)+1):
+                for j_comp in range(min(j1_comp, j2_comp), max(j1_comp, j2_comp)+1):
+                    if comp_matrix.get((i_comp, j_comp), 1) < sys.maxsize:  # Unexplored tiles are equal to sys.maxsize; we do want the unexplored, since we ran Dijkstra on the outside of the polygon formed by the input and stopped it from crossing the "#", "-" and "|"s.
+                        possible = False
+                        break
+                if not possible:  # Give up faster on invalid rectangles
+                    break
+            if not possible:  # Skip invalid rectangles
+                continue
+            
+            # And finally update the best area
+            bestarea = area
+            bestcoos = [
+                (i1, j1),
+                (i2, j2)
+            ]
     print(bestarea)
-    print(bestcoos)
-    # inmap.print()
+    # print(bestcoos)
+    # comp_matrix.print()  # I changed the print function for this problem only, to make it print the transposed matrix (since the coordinates are inverted in the subject...)
 
 
 # Utility class representing a 2D matrix
