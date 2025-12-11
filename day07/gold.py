@@ -5,7 +5,7 @@ def main(input_file=None):
     day = 7
     intest = open(f"day{day:02d}/test_input.txt", "r").readlines()
     inreal = open(f"day{day:02d}/input.txt", "r").readlines()
-    incustom = open(input_file, "r").readlines()
+    incustom = open(input_file, "r").readlines() if input_file else None
 
     # Input mode
     input = inreal
