@@ -1,5 +1,12 @@
+import sys
+
+
 day = 3
-input = open(f"day{day:02d}/input.txt", "r").readlines()
+
+input_file = sys.argv[1] if len(sys.argv) > 1 else f"day{day:02d}/input.txt"
+
+input = open(input_file, "r").readlines()
+
 inlist = [line.strip() for line in input]
 
 nb = 12  # The number of batteries to allow per bank: 2 for silver or 12 for gold

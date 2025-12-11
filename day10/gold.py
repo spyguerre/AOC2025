@@ -1,12 +1,14 @@
 from scipy.optimize import milp, LinearConstraint, Bounds
 import numpy as np
 import re
+import sys
 
 
-def main():
+def main(input_file=None):
     day = 10
     intest = open(f"day{day:02d}/test_input.txt", "r").readlines()
     inreal = open(f"day{day:02d}/input.txt", "r").readlines()
+    incustom = open(input_file, "r").readlines()
 
     # Input mode
     input = inreal
@@ -71,4 +73,5 @@ def main():
     print(res)
 
 if __name__ == "__main__":
-    main()
+    input_file = sys.argv[1] if len(sys.argv) > 1 else None
+    main(input_file)

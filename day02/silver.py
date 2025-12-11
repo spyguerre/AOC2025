@@ -1,6 +1,12 @@
+import sys
+
+
 day = 2
 
-input = open(f"day{day:02d}/input.txt", "r").readlines()[0].split(",")
+input_file = sys.argv[1] if len(sys.argv) > 1 else f"day{day:02d}/input.txt"
+
+input = open(input_file, "r").readlines()
+
 inlist = [(int(line.split("-")[0]), int(line.split("-")[1])) for line in input]
 
 res = 0
