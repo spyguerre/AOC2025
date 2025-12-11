@@ -5,9 +5,9 @@ day = 2
 
 input_file = sys.argv[1] if len(sys.argv) > 1 else f"day{day:02d}/input.txt"
 
-input = open(input_file, "r").readlines()
+input = open(input_file, "r").readlines()[0].split(",")
 
-inlist = [(int(line.split("-")[0]), int(line.split("-")[1])) for line in input]
+inlist = [(int(range_.split("-")[0]), int(range_.split("-")[1])) for range_ in input]
 
 res = 0
 for s, e in inlist:  # Extract start and end
